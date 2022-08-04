@@ -33,4 +33,7 @@ Future features
 * choice to receive daily quotes in your news feed as well
 * users can see random people’s answers on a discovery page
 * post streaks
+* ads
+* app
+* push notification for the question daily
 * tips section to help people think of the best ways to answer the questions
