@@ -71,20 +71,28 @@ class FriendRequests(db.Model):
         return f'<FriendRequest {self.id}, user id - {self.user_id}, requesting friend id - {self.friend_id}>'
 
 
-db.create_all()
+# db.create_all()
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/main', methods=['GET'])
 def main():
-
-    # if request.method == 'GET':
-    #     pass
-    # elif request.method == 'POST':
-    #     name = request.form.get('name')
-    #     post = request.form.get('post')
-    #     # create_post(name, post)
-
-
     return render_template('main.html')
+
+@app.route('/base', methods=['GET'])
+def base():
+    return render_template('base.html')
+
+# @app.route('/signup', methods=['GET', 'POST'])
+# def main():
+
+#     # if request.method == 'GET':
+#     #     pass
+#     # elif request.method == 'POST':
+#     #     name = request.form.get('name')
+#     #     post = request.form.get('post')
+#     #     # create_post(name, post)
+
+
+#     return render_template('main.html')
 
 
 
