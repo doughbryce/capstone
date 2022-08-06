@@ -14,6 +14,8 @@ mvp
 
 Future features
 * users can tag friends in a post
+* users can post their own questions, and their friends can answer
+* users can choose from 3 different questions to answer
 * users can draw responses with multiple colors and templates (Pictionary style)
 * users can draw profile pictures, have display names, and have a short bio description on their profile
 * users can share answers to different outlets
