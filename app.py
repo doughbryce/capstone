@@ -1,8 +1,8 @@
-from multiprocessing import AuthenticationError
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate  import Migrate
-from sqlalchemy import ForeignKey
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
 
 app = Flask(__name__)
 
@@ -71,7 +71,7 @@ class FriendRequests(db.Model):
         return f'<FriendRequest {self.id}, user id - {self.user_id}, requesting friend id - {self.friend_id}>'
 
 
-# db.create_all()
+db.create_all()
 
 @app.route('/main', methods=['GET'])
 def main():
@@ -81,18 +81,18 @@ def main():
 def base():
     return render_template('base.html')
 
-# @app.route('/signup', methods=['GET', 'POST'])
-# def main():
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
 
-#     # if request.method == 'GET':
-#     #     pass
-#     # elif request.method == 'POST':
-#     #     name = request.form.get('name')
-#     #     post = request.form.get('post')
-#     #     # create_post(name, post)
+    # if request.method == 'GET':
+    #     pass
+    # elif request.method == 'POST':
+    #     name = request.form.get('name')
+    #     post = request.form.get('post')
+    #     # create_post(name, post)
 
 
-#     return render_template('main.html')
+    return render_template('signup.html')
 
 
 
