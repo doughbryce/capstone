@@ -3,12 +3,23 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
+import config
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://brycedoughman:mit12@localhost:5432/capstonedb'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = config.secret_key
 db = SQLAlchemy(app)
 
+# form class flask wtforms
+class SignupForm(FlaskForm):
+    email = StringField('Enter your Email: ', validators=[DataRequired()])
+    password = StringField('Enter a Password: ', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
+# database creation
 class Users(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
@@ -73,9 +84,9 @@ class FriendRequests(db.Model):
 
 db.create_all()
 
-@app.route('/main', methods=['GET'])
-def main():
-    return render_template('main.html')
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/base', methods=['GET'])
 def base():
@@ -83,6 +94,7 @@ def base():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+
 
     # if request.method == 'GET':
     #     pass
@@ -92,8 +104,21 @@ def signup():
     #     # create_post(name, post)
 
 
-    return render_template('signup.html')
+    email = None
+    password = None
+    form = SignupForm()
 
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        form.email.data = ''
+        form.password.data = ''
+
+
+    return render_template('signup.html',
+        email = email,
+        password = password,
+        form = form)
 
 
 

@@ -20,6 +20,7 @@ Future features
 * users can draw profile pictures, have display names, and have a short bio description on their profile
 * users can share answers to different outlets
 * users can edit their answers
+* themed days with different question types - (debate, polls, storytime, drawings, etc...)
 * styling 
 	* smooth edges
 	* card like styling for answers

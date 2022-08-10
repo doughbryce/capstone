@@ -1,6 +1,23 @@
 {% extends "base.html" %}
 {% block body %}
-    <form action="">
-        hello
+    
+{% if email %}
+    <h1>this is your email: {{ email}} </h1>
+{% else %}
+<form method="POST" action="/signup">
+        <h1>register!!!</h1>
+            {{ form.hidden_tag() }}
+
+            {{ form.email.label }}
+            {{ form.email() }}
+        <br>
+            {{ form.password.label }}
+            {{ form.password() }}
+
+        <br>
+            {{ form.submit }}
+
     </form>
+
+{% endif %}
 {% endblock body %}
