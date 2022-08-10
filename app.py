@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from flask_migrate import Migrate
+from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired
 import config
 
@@ -11,11 +12,13 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://brycedoughman:mit12@localh
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = config.secret_key
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # form class flask wtforms
 class SignupForm(FlaskForm):
     email = StringField('Enter your Email: ', validators=[DataRequired()])
-    password = StringField('Enter a Password: ', validators=[DataRequired()])
+    display_name = StringField('Enter your Display Name: ', validators=[DataRequired()])
+    password = PasswordField('Enter a Password: ', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
@@ -23,7 +26,7 @@ class SignupForm(FlaskForm):
 class Users(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
-    display_name = db.Column(db.String(255), unique=True, nullable=False)
+    display_name = db.Column(db.String(255), unique=False, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     theme = db.Column(db.String(255), nullable=True)
     font = db.Column(db.String(255), nullable=True)
@@ -95,28 +98,29 @@ def base():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
 
-
-    # if request.method == 'GET':
-    #     pass
-    # elif request.method == 'POST':
-    #     name = request.form.get('name')
-    #     post = request.form.get('post')
-    #     # create_post(name, post)
-
-
     email = None
     password = None
+    display_name = None
     form = SignupForm()
 
     if form.validate_on_submit():
         email = form.email.data
+        display_name = form.display_name.data
         password = form.password.data
+
+        new_user = Users(email=form.email.data, password_hash=form.password.data, display_name=form.display_name.data)
+        db.session.add(new_user)
+        db.session.commit()
+
         form.email.data = ''
         form.password.data = ''
+
+        return redirect(url_for('index'))
 
 
     return render_template('signup.html',
         email = email,
+        display_name = display_name,
         password = password,
         form = form)
 
