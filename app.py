@@ -23,7 +23,7 @@ def load_user(user_id):
     return Users.query.get(int(user_id))
 
 
-class SignupForm(FlaskForm):
+class RegisterForm(FlaskForm):
     email = StringField('Enter your Email: ', validators=[DataRequired()])
     display_name = StringField('Enter your Display Name: ', validators=[DataRequired()])
     password = PasswordField('Enter a Password: ', validators=[DataRequired()])
@@ -33,6 +33,10 @@ class SignupForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = StringField('Enter your Email: ', validators=[DataRequired()])
     password = PasswordField('Enter your Password: ', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+class QuestionForm(FlaskForm):
+    question = StringField('Enter your Question: ', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
 
@@ -104,13 +108,13 @@ class FriendRequests(db.Model):
 
 # db.create_all()
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
+@app.route('/register', methods=['GET', 'POST'])
+def register():
 
     email = None
     password = None
     display_name = None
-    form = SignupForm()
+    form = RegisterForm()
 
     if form.validate_on_submit():
         email = form.email.data
@@ -124,10 +128,10 @@ def signup():
         form.email.data = ''
         form.password.data = ''
 
-        return redirect(url_for('index'))
+        return redirect(url_for('home'))
 
 
-    return render_template('signup.html',
+    return render_template('register.html',
         email = email,
         display_name = display_name,
         password = password,
@@ -144,11 +148,11 @@ def login():
         if user:
             if user.password_hash == form.password.data:
                 login_user(user)
-                return redirect(url_for('index'))
+                return redirect(url_for('home'))
             else:
                 return redirect(url_for('login'))
 
-        return redirect(next or url_for('index'))
+        return redirect(next or url_for('home'))
     return render_template('login.html', form=form)
 
 @app.route('/logout', methods=['GET', 'POST'])
@@ -158,16 +162,31 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/')
+@app.route('/home')
 @login_required
-def index():
-    return render_template('index.html', display_name=current_user.display_name)
+def home():
+    return render_template('home.html', display_name=current_user.display_name)
 
 @app.route('/base', methods=['GET'])
 def base():
     return render_template('base.html')
 
+@app.route('/profile', methods=['GET'])
+@login_required
+def profile():
+    return render_template('profile.html')
 
+@app.route('/friends', methods=['GET'])
+@login_required
+def friends():
+    return render_template('friends.html')
+
+
+@app.route('/add_question', methods=['GET', 'POST'])
+@login_required
+def add_question():
+    form = QuestionForm()
+    return render_template('add_question.html', form=form)
 
 
 

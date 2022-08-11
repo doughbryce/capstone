@@ -10,6 +10,22 @@
 </head>
 
 <body>
+
+    <form action="{{ url_for('home') }}">
+        <input type="submit" value="home page" />
+    </form>
+
+    <form action="{{ url_for('profile') }}">
+        <input type="submit" value="profile page" />
+    </form>
+
+    <form action="{{ url_for('friends') }}">
+        <input type="submit" value="friends page" />
+    </form>
+
+    <form action="{{ url_for('add_question') }}">
+        <input type="submit" value="add question page" />
+    </form>
     
     {% block body %}
     
