@@ -1,4 +1,10 @@
 {% extends "base.html" %}
 {% block body %}
     <h1>this is the homepage</h1>
+    <h1>you are logged in if you can see this</h1>
+    <h1>username: {{ display_name }}</h1>
+
+    <form action="{{ url_for('logout') }}">
+        <input type="submit" value="logout" />
+    </form>
 {% endblock body %}

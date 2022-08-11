@@ -20,6 +20,8 @@ Future features
 * users can draw profile pictures, have display names, and have a short bio description on their profile
 * users can share answers to different outlets
 * users can edit their answers
+* account recovery
+* custom validate that email is unique, so it doesnt throw an error page when registering
 * themed days with different question types - (debate, polls, storytime, drawings, etc...)
 * styling 
 	* smooth edges
@@ -36,6 +38,7 @@ Future features
 * choice to receive daily quotes in your news feed as well
 * users can see random people’s answers on a discovery page
 * post streaks
+* restrictions on profanity and post reporting
 * ads
 * app
 * push notification for the question daily

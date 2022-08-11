@@ -20,6 +20,10 @@
             {{ form.submit }}
 
     </form>
+    
+    <form action="{{ url_for('login') }}">
+        <input type="submit" value="login" />
+    </form>
 
 {% endif %}
 {% endblock body %}

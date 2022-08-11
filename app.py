@@ -1,9 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash, abort
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from flask_migrate import Migrate
 from wtforms import StringField, SubmitField, PasswordField
+from flask_migrate import Migrate
+from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 import config
 
 app = Flask(__name__)
@@ -13,8 +14,15 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = config.secret_key
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
-# form class flask wtforms
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+
 class SignupForm(FlaskForm):
     email = StringField('Enter your Email: ', validators=[DataRequired()])
     display_name = StringField('Enter your Display Name: ', validators=[DataRequired()])
@@ -22,14 +30,23 @@ class SignupForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class LoginForm(FlaskForm):
+    email = StringField('Enter your Email: ', validators=[DataRequired()])
+    password = PasswordField('Enter your Password: ', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
 # database creation
-class Users(db.Model):
+class Users(db.Model, UserMixin):
     user_id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True, nullable=False)
     display_name = db.Column(db.String(255), unique=False, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     theme = db.Column(db.String(255), nullable=True)
     font = db.Column(db.String(255), nullable=True)
+
+    def get_id(self):
+           return (self.user_id)
 
     def __repr__(self):
         return f'<User {self.user_id}, name - {self.display_name}, email - {self.email}>'
@@ -85,15 +102,7 @@ class FriendRequests(db.Model):
         return f'<FriendRequest {self.id}, user id - {self.user_id}, requesting friend id - {self.friend_id}>'
 
 
-db.create_all()
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/base', methods=['GET'])
-def base():
-    return render_template('base.html')
+# db.create_all()
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -123,6 +132,42 @@ def signup():
         display_name = display_name,
         password = password,
         form = form)
+
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Users.query.filter_by(email=form.email.data).first()
+
+        if user:
+            if user.password_hash == form.password.data:
+                login_user(user)
+                return redirect(url_for('index'))
+            else:
+                return redirect(url_for('login'))
+
+        return redirect(next or url_for('index'))
+    return render_template('login.html', form=form)
+
+@app.route('/logout', methods=['GET', 'POST'])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/')
+@login_required
+def index():
+    return render_template('index.html', display_name=current_user.display_name)
+
+@app.route('/base', methods=['GET'])
+def base():
+    return render_template('base.html')
+
+
 
 
 
