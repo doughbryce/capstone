@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, abort
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from wtforms import StringField, SubmitField, PasswordField
+from wtforms import StringField, SubmitField, PasswordField, SearchField, RadioField
 from flask_migrate import Migrate
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
@@ -39,6 +39,10 @@ class QuestionForm(FlaskForm):
     question = StringField('Enter your Question: ', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+class FriendSearchForm(FlaskForm):
+    search = StringField('Search by id or display name: ', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
 
 # database creation
 class Users(db.Model, UserMixin):
@@ -53,7 +57,7 @@ class Users(db.Model, UserMixin):
            return (self.user_id)
 
     def __repr__(self):
-        return f'<User {self.user_id}, name - {self.display_name}, email - {self.email}>'
+        return f'<USER({self.user_id}), NAME({self.display_name}), EMAIL({self.email})>'
 
 
 class Questions(db.Model):
@@ -188,6 +192,30 @@ def profile():
 def friends():
     return render_template('friends.html')
 
+@app.route('/search_friends', methods=['GET', 'POST'])
+@login_required
+def search_friends():
+    form = FriendSearchForm()
+    if form.validate_on_submit():
+        term = form.search.data 
+        try:
+            id_result = Users.query.get(int(term))
+            print(id_result)
+            return render_template('search_friends.html', 
+            form=form,
+            term = term,
+            id_result = id_result)
+        except:
+            name_results = Users.query.filter_by(display_name=term).all()
+            print(name_results)
+            return render_template('search_friends.html', 
+            form=form,
+            term = term,
+            name_results = name_results)
+        return render_template('search_friends.html', 
+            form=form,
+            term = term)
+    return render_template('search_friends.html', form=form)
 
 @app.route('/add_question', methods=['GET', 'POST'])
 @login_required

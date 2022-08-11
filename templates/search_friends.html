@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body %}
+    <form method="POST" action="/search_friends">
+        <h1>search for friend</h1>
+        {{ form.hidden_tag() }}
+        {{ form.search.label }}
+        {{ form.search() }}
+        {{ form.submit() }}
+    </form>
+
+    <h3>you searched for:  {{ term }}</h3>
+    <h3>results:</h3>
+    {% for friend in id_results %}
+        <p>{{ friend }}</p>
+        
+    {% endfor %}
+
+    {% for friend in name_results %}
+        <p>{{ friend }}</p>
+    {% endfor %}
+{% endblock body %}
