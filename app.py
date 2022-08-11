@@ -161,6 +161,10 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    return redirect(url_for('home'))
+
 
 @app.route('/home')
 @login_required
@@ -174,7 +178,10 @@ def base():
 @app.route('/profile', methods=['GET'])
 @login_required
 def profile():
-    return render_template('profile.html')
+    return render_template('profile.html',
+        display_name = current_user.display_name,
+        email = current_user.email,
+        user_id = current_user.user_id,)
 
 @app.route('/friends', methods=['GET'])
 @login_required
