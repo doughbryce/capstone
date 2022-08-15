@@ -1,3 +1,5 @@
+import random
+import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from wtforms import StringField, SubmitField, PasswordField, SearchField, RadioField
@@ -116,8 +118,16 @@ class FriendRequests(db.Model):
         friend_name = Users.query.filter_by(user_id=self.user_id).first().display_name
         return f'<Friend Request {self.id}, USER ({self_name}), REQUESTING FRIEND ({friend_name})>'
 
+class AskedQuestions(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String(1000), nullable=False)
+    
+    def __repr__(self):
+        return f'<Question: {self.question}>'
+
 
 db.create_all()
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -176,11 +186,13 @@ def logout():
 def index():
     return redirect(url_for('home'))
 
-
 @app.route('/home')
 @login_required
 def home():
-    return render_template('home.html', display_name=current_user.display_name)
+    question = random.choice(Questions.query.all()).question
+    return render_template('home.html', 
+        display_name=current_user.display_name,
+        question=question)
 
 @app.route('/base', methods=['GET'])
 def base():
@@ -252,7 +264,14 @@ def add_friend(id):
 @login_required
 def add_question():
     form = QuestionForm()
-    return render_template('add_question.html', form=form)
+    success = False
+    if form.validate_on_submit():
+        new_question = Questions(question=form.question.data)
+        db.session.add(new_question)
+        db.session.commit()
+        form.question.data = ''
+        success = True
+    return render_template('add_question.html', form=form, success=success)
 
 
 if __name__ == "__main__":
