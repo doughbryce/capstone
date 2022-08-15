@@ -43,6 +43,9 @@ class FriendSearchForm(FlaskForm):
     search = StringField('Search by id or display name: ', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
+class AddFriendForm(FlaskForm):
+    submit = SubmitField('Add Friend')
+
 
 # database creation
 class Users(db.Model, UserMixin):
@@ -63,8 +66,8 @@ class Users(db.Model, UserMixin):
 class Questions(db.Model):
     question_id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(1000), unique=True, nullable=False)
-    date_asked = db.Column(db.String(255), nullable=False)
-    question_type = db.Column(db.String(255), nullable=False)
+    date_asked = db.Column(db.DateTime, nullable=True)
+    question_type = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f'<Question {self.question_id}, date asked - {self.date_asked}, question type - {self.question_type}>'
@@ -98,7 +101,9 @@ class Friends(db.Model):
     friend_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
     
     def __repr__(self):
-        return f'<Friend {self.id}, user id - {self.user_id}, friend id - {self.friend_id}>'
+        self_name = Users.query.filter_by(user_id=self.user_id).first().display_name
+        friend_name = Users.query.filter_by(user_id=self.friend_id).first().display_name
+        return f'<Friend {self.id}, USER ({self_name}), FRIEND ({friend_name})>'
 
 
 class FriendRequests(db.Model):
@@ -107,10 +112,12 @@ class FriendRequests(db.Model):
     friend_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
     
     def __repr__(self):
-        return f'<FriendRequest {self.id}, user id - {self.user_id}, requesting friend id - {self.friend_id}>'
+        self_name = Users.query.filter_by(user_id=self.friend_id).first().display_name
+        friend_name = Users.query.filter_by(user_id=self.user_id).first().display_name
+        return f'<Friend Request {self.id}, USER ({self_name}), REQUESTING FRIEND ({friend_name})>'
 
 
-# db.create_all()
+db.create_all()
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -190,39 +197,62 @@ def profile():
 @app.route('/friends', methods=['GET'])
 @login_required
 def friends():
-    return render_template('friends.html')
+    form = AddFriendForm()
+    friends = Friends.query.filter_by(user_id=current_user.user_id).all()
+    received_requests = FriendRequests.query.filter_by(friend_id=current_user.user_id).all()
+    sent_requests = FriendRequests.query.filter_by(user_id=current_user.user_id).all()
+    return render_template('friends.html',
+        form=form,
+        friends=friends,
+        received_requests=received_requests, 
+        sent_requests=sent_requests)
 
 @app.route('/search_friends', methods=['GET', 'POST'])
 @login_required
 def search_friends():
     form = FriendSearchForm()
+    form2 = AddFriendForm()
     if form.validate_on_submit():
         term = form.search.data 
-        try:
-            id_result = Users.query.get(int(term))
-            print(id_result)
-            return render_template('search_friends.html', 
-            form=form,
-            term = term,
-            id_result = id_result)
-        except:
-            name_results = Users.query.filter_by(display_name=term).all()
-            print(name_results)
-            return render_template('search_friends.html', 
-            form=form,
-            term = term,
-            name_results = name_results)
+        name_results = Users.query.filter_by(display_name=term).all()
+        print(name_results)
         return render_template('search_friends.html', 
-            form=form,
-            term = term)
-    return render_template('search_friends.html', form=form)
+        form=form,
+        form2=form2,
+        term = term,
+        name_results = name_results)
+    return render_template('search_friends.html', form=form, form2=form2)
+
+@app.route('/friend_request_sent/<id>', methods=['GET', 'POST'])
+@login_required
+def friend_request_sent(id):
+    form = FriendSearchForm()
+    form2 = AddFriendForm()
+    if form2.validate_on_submit():
+        new_friend_request = FriendRequests(user_id=current_user.user_id, friend_id=id)
+        db.session.add(new_friend_request)
+        db.session.commit()
+        return redirect(url_for('friends'))
+    return render_template('search_friends.html', form=form, form2=form2)
+
+@app.route('/add_friend/<id>', methods=['GET', 'POST'])
+@login_required
+def add_friend(id):
+    form = AddFriendForm()
+    new_friend = Friends(user_id=current_user.user_id, friend_id=id)
+    friend_request = FriendRequests.query.filter_by(user_id=id, friend_id=current_user.user_id).first()
+    db.session.add(new_friend)
+    db.session.delete(friend_request)
+    db.session.commit()
+    render_template('friends.html', form=form)
+    return redirect(url_for('friends'))
+
 
 @app.route('/add_question', methods=['GET', 'POST'])
 @login_required
 def add_question():
     form = QuestionForm()
     return render_template('add_question.html', form=form)
-
 
 
 if __name__ == "__main__":

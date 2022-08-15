@@ -1,11 +1,18 @@
 {% extends "base.html" %}
 
 {% block body %}
-    <form action="POST">
-        <h1>Add a Question</h1>
-        {{ form.hidden_tag() }}
-        {{ form.question.label }}
-        {{ form.question() }}
-        {{ form.submit }}
-    </form>
+
+    {% if current_user.user_id == 29 %}
+        <form method="POST" action="/add_question">
+            <h1>Add a Question</h1>
+            {{ form.hidden_tag() }}
+            {{ form.question.label }}
+            {{ form.question() }}
+            {{ form.submit }}
+        </form>
+    {% else %}
+        <h1>You are not authorized to add a question</h1>
+    {% endif %}
+
+
 {% endblock body %}

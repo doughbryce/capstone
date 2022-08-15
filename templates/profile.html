@@ -9,4 +9,11 @@
     <form action="{{ url_for('logout') }}">
         <input type="submit" value="logout" />
     </form>
+
+    {% if current_user.user_id == 29 %}
+        <form action="{{ url_for('add_question') }}">
+            <input type="submit" value="add question page" />
+        </form>
+    {% endif %}
+
 {% endblock body %}

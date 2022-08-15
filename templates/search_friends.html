@@ -10,12 +10,12 @@
 
     <h3>you searched for:  {{ term }}</h3>
     <h3>results:</h3>
-    {% for friend in id_results %}
-        <p>{{ friend }}</p>
-        
-    {% endfor %}
 
     {% for friend in name_results %}
         <p>{{ friend }}</p>
+        <form method="POST" action="/friend_request_sent/{{ friend.user_id }}">
+            {{ form2.hidden_tag() }}
+            {{ form2.submit }}
+        </form>
     {% endfor %}
 {% endblock body %}

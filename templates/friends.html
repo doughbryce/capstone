@@ -2,10 +2,28 @@
 {% block body %}
     <h1>friends</h1>
 
-    <h2>recieved requests:</h2>
 
     <h2>current friends:</h2>
+    {% for friend in friends %}
+        <p>{{ friend }}</p>
+    {% endfor %}
+
+
+    <h2>received requests:</h2>
+    {% for friend in received_requests %}
+        <p>{{ friend }}</p>
+        
+            <form method="POST" action="/add_friend/{{ friend.user_id }}">
+                {{ form.hidden_tag() }}
+                {{ form.submit }}
+            </form>
+        
+    {% endfor %}
+
 
     <h2>sent requests:</h2>
+    {% for friend in sent_requests %}
+        <p>{{ friend }}</p>
+    {% endfor %}
 
 {% endblock body %}
