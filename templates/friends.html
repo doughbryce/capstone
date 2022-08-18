@@ -26,6 +26,11 @@
                 {{ form.hidden_tag() }}
                 {{ form.submit }}
             </form>
+
+            <form method="POST" action="/remove_friend_request/{{ friend.user_id }}">
+                {{ form3.hidden_tag() }}
+                {{ form3.submit }}
+            </form>
         {% endfor %}
     {% endif %}
     

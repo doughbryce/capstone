@@ -50,6 +50,9 @@ class AddFriendForm(FlaskForm):
 class RemoveFriendForm(FlaskForm):
     submit = SubmitField('Remove Friend')
 
+class RemoveFriendRequestForm(FlaskForm):
+    submit = SubmitField('Remove Request')
+
 class AnswerForm(FlaskForm):
     answer = TextAreaField('Enter your Answer: ', validators=[DataRequired()])
     submit = SubmitField('Submit')
@@ -207,9 +210,6 @@ def home():
     friends = Friends.query.filter_by(user_id=current_user.user_id).all()
     friends.append(Friends.query.filter_by(friend_id=current_user.user_id).all())
     friends = [friends[0]]
-    print(friends)
-    print(answer)
-    print(question)
     posts = []
     display_names = []
     # for friend in friends:
@@ -234,7 +234,6 @@ def answer():
     if form.validate_on_submit():
         answer = form.answer.data
         new_post = Posts(user_posted=current_user.user_id, content=answer, date=datetime.datetime.now(), question_id=question.original_id)
-        print(new_post)
         db.session.add(new_post)
         db.session.commit()
         form.answer.data = ''
@@ -260,6 +259,7 @@ def profile():
 def friends():
     form = AddFriendForm()
     form2 = RemoveFriendForm()
+    form3 = RemoveFriendRequestForm()
     list_of_friends = Friends.query.filter_by(user_id=current_user.user_id).all()
     list_of_friends.extend(Friends.query.filter_by(friend_id=current_user.user_id).all())
     received_requests = FriendRequests.query.filter_by(friend_id=current_user.user_id).all()
@@ -267,6 +267,7 @@ def friends():
     return render_template('friends.html',
         form=form,
         form2=form2,
+        form3=form3,
         list_of_friends=list_of_friends,
         received_requests=received_requests, 
         sent_requests=sent_requests)
@@ -323,7 +324,7 @@ def add_friend(id):
 
 @app.route('/remove_friend/<id>', methods=['GET', 'POST'])
 @login_required
-def delete_friend(id):
+def remove_friend(id):
     form2 = RemoveFriendForm()
     friend_to_remove1 = Friends.query.filter_by(user_id=id, friend_id=current_user.user_id).first()
     friend_to_remove2 = Friends.query.filter_by(user_id=current_user.user_id, friend_id=id).first()
@@ -333,6 +334,16 @@ def delete_friend(id):
         db.session.delete(friend_to_remove2)
     db.session.commit()
     render_template('friends.html', form2=form2)
+    return redirect(url_for('friends'))
+
+@app.route('/remove_friend_request/<id>', methods=['GET', 'POST'])
+@login_required
+def remove_friend_request(id):
+    form3 = RemoveFriendRequestForm()
+    friend_request_to_remove = FriendRequests.query.filter_by(user_id=id, friend_id=current_user.user_id).first()
+    db.session.delete(friend_request_to_remove)
+    db.session.commit()
+    render_template('friends.html', form3=form3)
     return redirect(url_for('friends'))
 
 
