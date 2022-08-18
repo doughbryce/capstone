@@ -1,13 +1,18 @@
 {% extends "base.html" %}
 {% block body %}
-    <h1>profile</h1>
+<br><br>
+    <h1>Profile</h1>
+    <br>
 
-    <h3> display name: {{ display_name }}</h3>
-    <h3> email: {{ email }}</h3>
-    <h3> user id: {{ user_id }}</h3>
+    <h2> display name: {{ display_name }}</h2>
+    <br>
+    <h2> email: {{ email }}</h2>
+    <br>
+    <h2> user id: {{ user_id }}</h2>
+    <br>
 
-    <form action="{{ url_for('logout') }}">
-        <input type="submit" value="logout" />
+    <form class="submit" action="{{ url_for('logout') }}">
+        <input class="submit" type="submit" value="logout" />
     </form>
 
     <br><br><br>

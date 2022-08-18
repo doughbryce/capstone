@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block body %}
-    <h2>question:</h2>
-    <p>{{ question }}</p>
+
+    <br><br>
+    <h1>{{ question.upper() }}</h1>
     {% if True %}
-        <form action="{{ url_for('answer') }}">
-            <input type="submit" value="answer" />
+        <form class="answer" action="{{ url_for('answer') }}">
+            <input class="answer" type="submit" value="answer" />
         </form>
     {% endif %}
 
@@ -15,8 +16,9 @@
     {% else %}
         {% for i in range(length) %}
                 {% if answers[i] != 0 %}
-                    <h3>{{ names[i] }}:</h3>
-                    <p>{{ answers[i] }}</p>
+                    <h2>{{ names[i] }}</h2>
+                    <h3>{{ answers[i] }}</h3>
+                    <br>
                 {% endif %}
         {% endfor %}
     {% endif %}

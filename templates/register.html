@@ -13,29 +13,31 @@
     {% if email %}
         <h1>this is your email: {{ email}} </h1>
     {% else %}
+    <div class="register">
+
         <form method="POST" action="/register">
             <h1>Register</h1>
-                {{ form.hidden_tag() }}
-    
-                {{ form.email.label }}
-                {{ form.email() }}
+            {{ form.hidden_tag() }}
+            
+            {{ form.email.label }}
+            {{ form.email(class="search") }}
             <br>
-                {{ form.display_name.label }}
-                {{ form.display_name() }}
+            {{ form.display_name.label }}
+            {{ form.display_name(class="search") }}
             <br>
-                {{ form.password.label }}
-                {{ form.password() }}
+            {{ form.password.label }}
+            {{ form.password(class="search") }}
             <br>
-                {{ form.submit }}
-        
+            {{ form.submit(value="Register",class="submit") }}
+            
         </form>
-
-        <br><br><br>
         
-        <form action="{{ url_for('login') }}">
-            <input type="submit" value="Login" />
+        
+        <form class="submit" action="{{ url_for('login') }}">
+            <input class="submit" type="submit" value="Login" />
         </form>
-    
+        
+    </div>
     {% endif %}
 
 </body>

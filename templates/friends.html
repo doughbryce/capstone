@@ -1,20 +1,24 @@
 {% extends "base.html" %}
 {% block body %}
-    <h3>friends</h3>
 
+<br><br>
+    <h1>FRIENDS</h1>
+    <br>
     {% for friend in list_of_friends %}
+    <div class="results">
 
-        <p>{{ friend.display_name }}  -  ({{ friend.user_id }})</p>
-
+        <h3>{{ friend.display_name }}  -  ({{ friend.user_id }})</h3>
+        
         <form method="POST" action="/remove_friend/{{ friend.user_id }}">
             {{ form2.hidden_tag() }}
             {{ form2.submit }}
         </form>
-
+        
+    </div>
     {% endfor %}
 
     {% if received_requests %}
-        <h3>received requests:</h3>
+        <h1>received requests:</h1>
         {% for friend in received_requests %}
             <p>{{ friend.display_name }}  -  ({{ friend.user_id }})</p>
             
@@ -27,13 +31,14 @@
 
             <form method="POST" action="/remove_friend_request/{{ friend.user_id }}">
                 {{ form3.hidden_tag() }}
-                {{ form3.submit }}
+                {{ form3.submit(value="X") }}
             </form>
         {% endfor %}
     {% endif %}
     
     {% if sent_requests %}
-        <h3>sent requests:</h3>
+        <h1>sent requests:</h1>
+        <br>
         {% for friend in sent_requests %}
             <p>{{ friend.display_name }}  -  ({{ friend.user_id }})</p>
         {% endfor %}

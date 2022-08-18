@@ -45,10 +45,10 @@ class FriendSearchForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class AddFriendForm(FlaskForm):
-    submit = SubmitField('Add Friend')
+    submit = SubmitField('+')
 
 class RemoveFriendForm(FlaskForm):
-    submit = SubmitField('Remove Friend')
+    submit = SubmitField('X')
 
 class RemoveFriendRequestForm(FlaskForm):
     submit = SubmitField('Remove Request')

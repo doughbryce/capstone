@@ -12,9 +12,9 @@ def random_question():
     db.session.commit()
     print('new question updated')
 
-schedule.every().day.at("05:00").do(random_question)
+schedule.every().day.at("06:45").do(random_question)
 # schedule.every(10).seconds.do(random_question)
 
 while True:
     schedule.run_pending()
-    time.sleep(10)
+    time.sleep(1)
