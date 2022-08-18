@@ -47,6 +47,9 @@ class FriendSearchForm(FlaskForm):
 class AddFriendForm(FlaskForm):
     submit = SubmitField('Add Friend')
 
+class RemoveFriendForm(FlaskForm):
+    submit = SubmitField('Remove Friend')
+
 class AnswerForm(FlaskForm):
     answer = TextAreaField('Enter your Answer: ', validators=[DataRequired()])
     submit = SubmitField('Submit')
@@ -256,12 +259,14 @@ def profile():
 @login_required
 def friends():
     form = AddFriendForm()
+    form2 = RemoveFriendForm()
     list_of_friends = Friends.query.filter_by(user_id=current_user.user_id).all()
     list_of_friends.extend(Friends.query.filter_by(friend_id=current_user.user_id).all())
     received_requests = FriendRequests.query.filter_by(friend_id=current_user.user_id).all()
     sent_requests = FriendRequests.query.filter_by(user_id=current_user.user_id).all()
     return render_template('friends.html',
         form=form,
+        form2=form2,
         list_of_friends=list_of_friends,
         received_requests=received_requests, 
         sent_requests=sent_requests)
@@ -307,12 +312,27 @@ def friend_request_sent(id):
 @login_required
 def add_friend(id):
     form = AddFriendForm()
+    form2 = RemoveFriendForm()
     new_friend = Friends(user_id=current_user.user_id, friend_id=id)
     friend_request = FriendRequests.query.filter_by(user_id=id, friend_id=current_user.user_id).first()
     db.session.add(new_friend)
     db.session.delete(friend_request)
     db.session.commit()
-    render_template('friends.html', form=form)
+    render_template('friends.html', form=form, form2=form2)
+    return redirect(url_for('friends'))
+
+@app.route('/remove_friend/<id>', methods=['GET', 'POST'])
+@login_required
+def delete_friend(id):
+    form2 = RemoveFriendForm()
+    friend_to_remove1 = Friends.query.filter_by(user_id=id, friend_id=current_user.user_id).first()
+    friend_to_remove2 = Friends.query.filter_by(user_id=current_user.user_id, friend_id=id).first()
+    if friend_to_remove1:
+        db.session.delete(friend_to_remove1)
+    elif friend_to_remove2:
+        db.session.delete(friend_to_remove2)
+    db.session.commit()
+    render_template('friends.html', form2=form2)
     return redirect(url_for('friends'))
 
 

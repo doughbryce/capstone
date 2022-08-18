@@ -2,28 +2,39 @@
 {% block body %}
     <h1>friends</h1>
 
-
-    <h2>current friends:</h2>
     {% for friend in list_of_friends %}
         <p>{{ friend }}</p>
+        {% if friend.user_id == current_user.user_id %}
+            <form method="POST" action="/remove_friend/{{ friend.friend_id }}">
+                {{ form2.hidden_tag() }}
+                {{ form2.submit }}
+            </form>
+        {% elif friend.friend_id == current_user.user_id %}
+            <form method="POST" action="/remove_friend/{{ friend.user_id }}">
+                {{ form2.hidden_tag() }}
+                {{ form2.submit }}
+            </form>
+        {% endif %}
     {% endfor %}
 
+    {% if received_requests %}
+        <h2>received requests:</h2>
+        {% for friend in received_requests %}
+            <p>{{ friend }}</p>
+            
+            <form method="POST" action="/add_friend/{{ friend.user_id }}">
+                {{ form.hidden_tag() }}
+                {{ form.submit }}
+            </form>
+        {% endfor %}
+    {% endif %}
+    
 
-    <h2>received requests:</h2>
-    {% for friend in received_requests %}
-        <p>{{ friend }}</p>
-        
-        <form method="POST" action="/add_friend/{{ friend.user_id }}">
-            {{ form.hidden_tag() }}
-            {{ form.submit }}
-        </form>
-        
-    {% endfor %}
-
-
-    <h2>sent requests:</h2>
-    {% for friend in sent_requests %}
-        <p>{{ friend }}</p>
-    {% endfor %}
+    {% if sent_requests %}
+        <h2>sent requests:</h2>
+        {% for friend in sent_requests %}
+            <p>{{ friend }}</p>
+        {% endfor %}
+    {% endif %}
 
 {% endblock body %}
