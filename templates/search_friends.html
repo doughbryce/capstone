@@ -5,6 +5,7 @@
         <h1>search for friend</h1>
         {{ form.hidden_tag() }}
         {{ form.search.label }}
+        <br><br>
         {{ form.search() }}
         {{ form.submit() }}
     </form>
@@ -12,7 +13,7 @@
     {% if search_results %}
         <h3>search results:</h3>
         {% for friend in search_results %}
-            <p>{{ friend }}</p>
+            <p>{{ friend.display_name }}  -  {{ friend.user_id }}</p>
             <form method="POST" action="/friend_request_sent/{{ friend.user_id }}">
                 {{ form2.hidden_tag() }}
                 {{ form2.submit }}

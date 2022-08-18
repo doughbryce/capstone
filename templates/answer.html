@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 {% block body %}
-    <h2>question:</h2>
-    <p>{{ question.question }}</p>
 
-    <form method="POST">
+    <h2> {{ question }} </h2>
+
+    <form method="POST" action="{{ url_for('answer') }}"">
         {{ form.hidden_tag() }}
-        {{ form.answer.label }}
-        {{ form.answer }}
-        {{ form.submit() }}
+        <p>Enter your answer:</p>
+        {{ form.answer(rows='10',cols='40') }}
+        <br>
+        {{ form.submit }}
     </form>
+
 {% endblock body %}

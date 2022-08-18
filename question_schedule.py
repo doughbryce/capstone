@@ -1,16 +1,14 @@
 import random
 import datetime
-from app import Questions, AskedQuestions, db
+from app import Questions, db
 import schedule
 import time
 
 
 def random_question():
-    q = (random.choice(Questions.query.all()))
-    asked_q = AskedQuestions(question=q.question, original_id=q.question_id)
-    now = datetime.datetime.now()
-    q.date_asked = now
-    db.session.add(asked_q)
+    q = (random.choice(Questions.query.filter_by(date_asked=None).all()))
+    q.date_asked = datetime.datetime.now()
+    db.session.add(q)
     db.session.commit()
     print('new question updated')
 

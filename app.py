@@ -65,7 +65,6 @@ class Users(db.Model, UserMixin):
     display_name = db.Column(db.String(255), unique=False, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     theme = db.Column(db.String(255), nullable=True)
-    font = db.Column(db.String(255), nullable=True)
 
     def get_id(self):
            return (self.user_id)
@@ -104,8 +103,6 @@ class Comments(db.Model):
     def __repr__(self):
         return f'<Comment {self.comment_id}, post - {self.post_id}, user id - {self.user_id}, date - {self.date}>'
 
-
-
 class Friends(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
@@ -118,7 +115,6 @@ class Friends(db.Model):
         self_name = Users.query.filter_by(user_id=self.user_id).first().display_name
         friend_name = Users.query.filter_by(user_id=self.friend_id).first().display_name
         return f'<Friend {self.id}, USER ({self_name}({self.user_id})), FRIEND ({friend_name}({self.friend_id}))>'
-
 
 class FriendRequests(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -133,17 +129,7 @@ class FriendRequests(db.Model):
         friend_name = Users.query.filter_by(user_id=self.user_id).first().display_name
         return f'<Friend Request {self.id}, USER ({self_name}), REQUESTING FRIEND ({friend_name})>'
 
-class AskedQuestions(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.String(1000), nullable=False)
-    original_id = db.Column(db.Integer, db.ForeignKey(Questions.question_id))
-    
-    def __repr__(self):
-        return f'<Question: {self.question}>'
-
-
 db.create_all()
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -205,46 +191,57 @@ def index():
 @app.route('/home')
 @login_required
 def home():
-    question = AskedQuestions.query.order_by(AskedQuestions.id.desc()).first()
-    answer = Posts.query.filter(Posts.user_posted == current_user.user_id).order_by(Posts.date.desc()).first()
-    friends = Friends.query.filter_by(user_id=current_user.user_id).all()
-    friends.append(Friends.query.filter_by(friend_id=current_user.user_id).all())
-    friends = [friends[0]]
-    posts = []
-    display_names = []
-    # for friend in friends:
-    #     display_names.append(Users.query.filter_by(user_id=friend.user_id).first().display_name)
-    #     post = Posts.query.filter_by(user_posted=friend.user_id).first().content
-    #     posts.append(post)
-    length = len(friends)
+    question = Questions.query.filter(Questions.date_asked != None).order_by(Questions.date_asked.desc()).first().question
+
+
+    friends1 = Friends.query.filter_by(user_id=current_user.user_id).all()
+    friend_ids = []
+    for f in friends1:
+        friend_ids.append(f.friend_id)
+    friends2 = Friends.query.filter_by(friend_id=current_user.user_id).all()
+    for f in friends2:
+        friend_ids.append(f.user_id)
+    names = [current_user.display_name]
+    for friend_id in friend_ids:
+        names.append(Users.query.filter_by(user_id=friend_id).first().display_name)
+
+
+    answers = [Posts.query.filter_by(user_posted=current_user.user_id).order_by(Posts.date.desc()).first().content]
+    for friend_id in friend_ids:
+        posts = Posts.query.filter_by(user_posted=friend_id).order_by(Posts.date.desc()).first()
+        if posts:
+            answers.append(posts.content)
+        else:
+            answers.append("Hasn't posted yet")
+    
+
+    length = len(names)
+
     return render_template('home.html', 
         display_name=current_user.display_name,
-        display_names=display_names,
         question=question,
-        answer=answer,
-        friends=friends,
-        posts=posts,
-        length=length)
+        names=names,
+        length=length,
+        answers=answers)
 
 @app.route('/answer', methods=['GET', 'POST'])
 @login_required
 def answer():
     form = AnswerForm()
-    question = AskedQuestions.query.order_by(AskedQuestions.id.desc()).first()
+    question = Questions.query.filter(Questions.date_asked != None).order_by(Questions.date_asked.desc()).first()
+
+
     if form.validate_on_submit():
         answer = form.answer.data
-        new_post = Posts(user_posted=current_user.user_id, content=answer, date=datetime.datetime.now(), question_id=question.original_id)
+        new_post = Posts(user_posted=current_user.user_id, content=answer, date=datetime.datetime.now(), question_id=question.question_id)
         db.session.add(new_post)
         db.session.commit()
-        form.answer.data = ''
         return redirect(url_for('home'))
+
+
     return render_template('answer.html', 
         form=form, 
-        question=question)
-
-@app.route('/base', methods=['GET'])
-def base():
-    return render_template('base.html')
+        question=question.question)
 
 @app.route('/profile', methods=['GET'])
 @login_required
@@ -260,10 +257,29 @@ def friends():
     form = AddFriendForm()
     form2 = RemoveFriendForm()
     form3 = RemoveFriendRequestForm()
-    list_of_friends = Friends.query.filter_by(user_id=current_user.user_id).all()
-    list_of_friends.extend(Friends.query.filter_by(friend_id=current_user.user_id).all())
-    received_requests = FriendRequests.query.filter_by(friend_id=current_user.user_id).all()
-    sent_requests = FriendRequests.query.filter_by(user_id=current_user.user_id).all()
+
+    list_of_friend_ids = []
+    list_of_friends = []
+    list_of_friends1 = Friends.query.filter_by(user_id=current_user.user_id).all()
+    for f in list_of_friends1:
+        list_of_friend_ids.append(f.friend_id)
+    list_of_friends2 = Friends.query.filter_by(friend_id=current_user.user_id).all()
+    for f in list_of_friends2:
+        list_of_friend_ids.append(f.user_id)
+    for num in list_of_friend_ids:
+        list_of_friends.append(Users.query.filter_by(user_id=num).first())
+
+    
+    received_requests = []
+    received_requests1 = FriendRequests.query.filter_by(friend_id=current_user.user_id).all()
+    for f in received_requests1:
+        received_requests.append(Users.query.filter_by(user_id=f.user_id).first())
+
+    sent_requests = []
+    sent_requests1 = FriendRequests.query.filter_by(user_id=current_user.user_id).all()
+    for f in sent_requests1:
+        sent_requests.append(Users.query.filter_by(user_id=f.friend_id).first())
+
     return render_template('friends.html',
         form=form,
         form2=form2,
@@ -281,6 +297,10 @@ def search_friends():
         term = form.search.data 
         list_of_friends = Friends.query.filter_by(user_id=current_user.user_id).all()
         list_of_friends.extend(Friends.query.filter_by(friend_id=current_user.user_id).all())
+        list_of_friends.extend(FriendRequests.query.filter_by(user_id=current_user.user_id).all())
+        list_of_friends.extend(FriendRequests.query.filter_by(friend_id=current_user.user_id).all())
+
+
         list_of_users = []
         for friend in list_of_friends:
             list_of_users.extend(Users.query.filter_by(user_id=friend.friend_id).all())
