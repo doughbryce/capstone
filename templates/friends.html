@@ -4,7 +4,7 @@
 
 
     <h2>current friends:</h2>
-    {% for friend in friends %}
+    {% for friend in list_of_friends %}
         <p>{{ friend }}</p>
     {% endfor %}
 
@@ -13,10 +13,10 @@
     {% for friend in received_requests %}
         <p>{{ friend }}</p>
         
-            <form method="POST" action="/add_friend/{{ friend.user_id }}">
-                {{ form.hidden_tag() }}
-                {{ form.submit }}
-            </form>
+        <form method="POST" action="/add_friend/{{ friend.user_id }}">
+            {{ form.hidden_tag() }}
+            {{ form.submit }}
+        </form>
         
     {% endfor %}
 

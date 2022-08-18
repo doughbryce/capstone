@@ -1,8 +1,7 @@
-import random
 import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from wtforms import StringField, SubmitField, PasswordField, SearchField, RadioField
+from wtforms import StringField, SubmitField, PasswordField, SearchField, TextAreaField
 from flask_migrate import Migrate
 from flask_wtf import FlaskForm
 from wtforms.validators import DataRequired
@@ -47,6 +46,10 @@ class FriendSearchForm(FlaskForm):
 
 class AddFriendForm(FlaskForm):
     submit = SubmitField('Add Friend')
+
+class AnswerForm(FlaskForm):
+    answer = TextAreaField('Enter your Answer: ', validators=[DataRequired()])
+    submit = SubmitField('Submit')
 
 
 # database creation
@@ -101,17 +104,23 @@ class Friends(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
     friend_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'friend_id'),
+      )
     
     def __repr__(self):
         self_name = Users.query.filter_by(user_id=self.user_id).first().display_name
         friend_name = Users.query.filter_by(user_id=self.friend_id).first().display_name
-        return f'<Friend {self.id}, USER ({self_name}), FRIEND ({friend_name})>'
+        return f'<Friend {self.id}, USER ({self_name}({self.user_id})), FRIEND ({friend_name}({self.friend_id}))>'
 
 
 class FriendRequests(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
     friend_id = db.Column(db.Integer, db.ForeignKey(Users.user_id), nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'friend_id'),
+      )
     
     def __repr__(self):
         self_name = Users.query.filter_by(user_id=self.friend_id).first().display_name
@@ -121,6 +130,7 @@ class FriendRequests(db.Model):
 class AskedQuestions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     question = db.Column(db.String(1000), nullable=False)
+    original_id = db.Column(db.Integer, db.ForeignKey(Questions.question_id))
     
     def __repr__(self):
         return f'<Question: {self.question}>'
@@ -189,9 +199,45 @@ def index():
 @app.route('/home')
 @login_required
 def home():
-    question = random.choice(Questions.query.all()).question
+    question = AskedQuestions.query.order_by(AskedQuestions.id.desc()).first()
+    answer = Posts.query.filter(Posts.user_posted == current_user.user_id).order_by(Posts.date.desc()).first()
+    friends = Friends.query.filter_by(user_id=current_user.user_id).all()
+    friends.append(Friends.query.filter_by(friend_id=current_user.user_id).all())
+    friends = [friends[0]]
+    print(friends)
+    print(answer)
+    print(question)
+    posts = []
+    display_names = []
+    # for friend in friends:
+    #     display_names.append(Users.query.filter_by(user_id=friend.user_id).first().display_name)
+    #     post = Posts.query.filter_by(user_posted=friend.user_id).first().content
+    #     posts.append(post)
+    length = len(friends)
     return render_template('home.html', 
         display_name=current_user.display_name,
+        display_names=display_names,
+        question=question,
+        answer=answer,
+        friends=friends,
+        posts=posts,
+        length=length)
+
+@app.route('/answer', methods=['GET', 'POST'])
+@login_required
+def answer():
+    form = AnswerForm()
+    question = AskedQuestions.query.order_by(AskedQuestions.id.desc()).first()
+    if form.validate_on_submit():
+        answer = form.answer.data
+        new_post = Posts(user_posted=current_user.user_id, content=answer, date=datetime.datetime.now(), question_id=question.original_id)
+        print(new_post)
+        db.session.add(new_post)
+        db.session.commit()
+        form.answer.data = ''
+        return redirect(url_for('home'))
+    return render_template('answer.html', 
+        form=form, 
         question=question)
 
 @app.route('/base', methods=['GET'])
@@ -210,12 +256,13 @@ def profile():
 @login_required
 def friends():
     form = AddFriendForm()
-    friends = Friends.query.filter_by(user_id=current_user.user_id).all()
+    list_of_friends = Friends.query.filter_by(user_id=current_user.user_id).all()
+    list_of_friends.extend(Friends.query.filter_by(friend_id=current_user.user_id).all())
     received_requests = FriendRequests.query.filter_by(friend_id=current_user.user_id).all()
     sent_requests = FriendRequests.query.filter_by(user_id=current_user.user_id).all()
     return render_template('friends.html',
         form=form,
-        friends=friends,
+        list_of_friends=list_of_friends,
         received_requests=received_requests, 
         sent_requests=sent_requests)
 
@@ -226,13 +273,22 @@ def search_friends():
     form2 = AddFriendForm()
     if form.validate_on_submit():
         term = form.search.data 
-        name_results = Users.query.filter_by(display_name=term).all()
-        print(name_results)
+        list_of_friends = Friends.query.filter_by(user_id=current_user.user_id).all()
+        list_of_friends.extend(Friends.query.filter_by(friend_id=current_user.user_id).all())
+        list_of_users = []
+        for friend in list_of_friends:
+            list_of_users.extend(Users.query.filter_by(user_id=friend.friend_id).all())
+            list_of_users.extend(Users.query.filter_by(user_id=friend.user_id).all())
+        list_of_users = set(list_of_users)
+        search_results = Users.query.filter_by(display_name=term).all()
+        for friend in search_results:
+            if friend in list_of_users:
+                search_results.remove(friend)
         return render_template('search_friends.html', 
         form=form,
         form2=form2,
         term = term,
-        name_results = name_results)
+        search_results = search_results)
     return render_template('search_friends.html', form=form, form2=form2)
 
 @app.route('/friend_request_sent/<id>', methods=['GET', 'POST'])

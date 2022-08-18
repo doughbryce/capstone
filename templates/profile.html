@@ -10,6 +10,8 @@
         <input type="submit" value="logout" />
     </form>
 
+    <br><br><br>
+
     {% if current_user.user_id == 29 %}
         <form action="{{ url_for('add_question') }}">
             <input type="submit" value="add question page" />

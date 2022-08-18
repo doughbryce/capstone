@@ -1,7 +1,20 @@
 {% extends "base.html" %}
 {% block body %}
     <h2>question:</h2>
-    <p>{{ question }}</p>
-    <button>answer(inactive)</button>
+    <p>{{ question.question }}</p>
+    {% if True %}
+        <form action="{{ url_for('answer') }}">
+            <input type="submit" value="answer" />
+        </form>
+    {% endif %}
     <h2>answers:</h2>
+    
+    <p>you: </p>
+    <p>{{ answer }}</p>
+
+    {% for i in range(length) %}
+        <p>{{ display_names[i] }}:</p>
+        <p>{{ posts[i] }}</p>
+    {% endfor %}
+
 {% endblock body %}

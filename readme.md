@@ -5,14 +5,17 @@ pitch
 
 mvp
 * daily question from database of interesting questions
+* questions automatically refresh every day at 5am
+* users can post their answers and see their friends answers
 * users able to create and login to account
-* users able to add and delete friends from following list
+* users able to add friends from following list
 * friends able to see each others answers to the questions
-* only see others answers if you have posted yourself
-* users can comment on friends posts
 * users can access the home page (feed) or the profile page (settings and such)
 
 Future features
+* users can delete friends
+* only see others answers if you have posted yourself
+* users can comment on friends posts
 * users can tag friends in a post
 * users can post their own questions, and their friends can answer
 * users can choose from 3 different questions to answer
