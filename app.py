@@ -191,7 +191,7 @@ def index():
 @app.route('/home')
 @login_required
 def home():
-    question = Questions.query.filter(Questions.date_asked != None).order_by(Questions.date_asked.desc()).first().question
+    question = Questions.query.filter(Questions.date_asked != None).order_by(Questions.date_asked.desc()).first()
 
 
     friends1 = Friends.query.filter_by(user_id=current_user.user_id).all()
@@ -205,21 +205,27 @@ def home():
     for friend_id in friend_ids:
         names.append(Users.query.filter_by(user_id=friend_id).first().display_name)
 
+    
+    answers = []
+    my_answer = Posts.query.filter(Posts.question_id == question.question_id, Posts.user_posted == current_user.user_id).order_by(Posts.date.desc()).first() 
+    if my_answer:
+        answers = [Posts.query.filter(Posts.question_id == question.question_id, Posts.user_posted == current_user.user_id).order_by(Posts.date.desc()).first().content]
+    else:
+        answers = [0]
 
-    answers = [Posts.query.filter_by(user_posted=current_user.user_id).order_by(Posts.date.desc()).first().content]
     for friend_id in friend_ids:
-        posts = Posts.query.filter_by(user_posted=friend_id).order_by(Posts.date.desc()).first()
-        if posts:
-            answers.append(posts.content)
+        post = Posts.query.filter(Posts.question_id == question.question_id, Posts.user_posted == friend_id).order_by(Posts.date.desc()).first()
+        if post:
+            answers.append(post.content)
         else:
-            answers.append("Hasn't posted yet")
+            answers.append(0)
     
 
     length = len(names)
 
     return render_template('home.html', 
         display_name=current_user.display_name,
-        question=question,
+        question=question.question,
         names=names,
         length=length,
         answers=answers)

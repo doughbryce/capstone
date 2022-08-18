@@ -97,19 +97,4 @@ What is your favorite family holiday tradition?
 Who is the most intelligent person you know?  
 If you had to describe yourself as an animal, which one would it be?  
 What is one thing you will never do again?  
-Who knows you the best?  
-
-
-
-
-answer = Posts.query.filter(Posts.user_posted == current_user.user_id).order_by(Posts.date.desc()).first()
-    friends = Friends.query.filter_by(user_id=current_user.user_id).all()
-    friends.append(Friends.query.filter_by(friend_id=current_user.user_id).all())
-    friends = [friends[0]]
-    posts = []
-    display_names = []
-    # for friend in friends:
-    #     display_names.append(Users.query.filter_by(user_id=friend.user_id).first().display_name)
-    #     post = Posts.query.filter_by(user_posted=friend.user_id).first().content
-    #     posts.append(post)
-    length = len(friends)
+Who knows you the best?

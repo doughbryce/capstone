@@ -10,9 +10,15 @@
 
     <br><br>
     
-    {% for i in range(length) %}
-        <h3>{{ names[i] }}:</h3>
-        <p>{{ answers[i] }}</p>
-    {% endfor %}
+    {% if answers[0] == 0 %}
+        <p>Post to see other's posts!!</p>
+    {% else %}
+        {% for i in range(length) %}
+                {% if answers[i] != 0 %}
+                    <h3>{{ names[i] }}:</h3>
+                    <p>{{ answers[i] }}</p>
+                {% endif %}
+        {% endfor %}
+    {% endif %}
 
 {% endblock body %}
